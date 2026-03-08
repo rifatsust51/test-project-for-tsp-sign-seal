@@ -394,16 +394,15 @@ export default function PDFPreview({
         );
         const signedData =
           signResponse.data?.signedData || signResponse.signedData;
+        console.log(
+          "🚀 ~ PDFPreview.tsx:397 ~ handleActionClick ~ signedData:",
+          signedData,
+        );
 
         if (!signedData) throw new Error("No signed data received");
 
         setStatusMessage("Verifying Signature...");
-        const verifyResponse = await verifyFileService(
-          signedData,
-          userProfile.id,
-          fileName,
-          token!,
-        );
+        const verifyResponse = await verifyFileService(signedData, fileName);
 
         if (verifyResponse.code === 0 && verifyResponse.message === "Success") {
           const blob = base64ToBlob(signedData);

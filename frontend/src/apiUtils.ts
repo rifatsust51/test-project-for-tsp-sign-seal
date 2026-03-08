@@ -1,7 +1,37 @@
+import axios from "axios";
 import { jsPDF } from "jspdf";
 import type { FormData } from "./PDFGenerator";
 
 const BASE_URL = "https://192.168.0.155:8443/tspgatewayservice/gateway";
+
+const TSP_TOKEN_URL = "https://192.168.0.155:8443/tspgateway/rest/admin/token";
+
+const ADMIN_USER_ID = "d6adae7a-ad36-4f21-b4d7-2abbe744ce47";
+
+let authToken: string | null = null;
+
+async function getAuthToken() {
+  if (authToken) return authToken;
+  try {
+    console.log("\n🔑 Fetching new TSP auth token...");
+
+    const response = await axios.get(TSP_TOKEN_URL, {
+      headers: { Accept: "application/json" },
+    });
+
+    if (response.data?.data?.token) {
+      const raw: string = response.data.data.token;
+      authToken = raw.replace("Bearer ", "").trim(); // store clean token
+      console.log("✅ New TSP token acquired");
+      return authToken;
+    } else {
+      throw new Error("No token returned from TSP API");
+    }
+  } catch (err) {
+    console.error("❌ Failed to get TSP token");
+    throw err;
+  }
+}
 
 // 1. Helper: Generate Base64 PDF
 export const generatePdfBase64 = (data: FormData): string => {
@@ -55,8 +85,8 @@ export const signFileService = async (
     userId: userId,
     vSigEnabled: true,
     vSigPage: 1,
-    vSigXPosition: 100,
-    vSigYPosition: 100,
+    vSigXPosition: 320,
+    vSigYPosition: 750,
   };
 
   const response = await fetch(`${BASE_URL}/signFile`, {
@@ -79,22 +109,26 @@ export const signFileService = async (
 // 4. API: Verify File (NOW ACCEPTS fileName)
 export const verifyFileService = async (
   signedBase64: string,
-  userId: string,
   fileName: string,
-  token: string,
 ) => {
+  const cleanToken = await getAuthToken();
+
+  const dataString = Array.isArray(signedBase64)
+    ? signedBase64[0]
+    : signedBase64;
+
   const payload = {
-    data: signedBase64,
+    data: dataString,
     localization: "en",
-    fileNames: [fileName], // <--- Dynamic Filename
-    userId: userId,
+    fileNames: [fileName],
+    userId: ADMIN_USER_ID,
   };
 
   const response = await fetch(`${BASE_URL}/verifyFile`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${cleanToken}`,
     },
     body: JSON.stringify(payload),
   });
