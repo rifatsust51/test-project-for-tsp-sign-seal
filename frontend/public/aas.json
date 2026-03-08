@@ -1,0 +1,8 @@
+{
+  "realm": "CloudID",
+  "auth-server-url": "https://portal.test.reliefvalidation.com.bd/auth",
+  "ssl-required": "external",
+  "resource": "tspclient-public-1258-ovi_auth",
+  "public-client": true,
+  "confidential-port": 0
+}
