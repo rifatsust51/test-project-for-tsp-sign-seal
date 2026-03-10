@@ -1,4 +1,5 @@
 import axios from "axios";
+
 import { jsPDF } from "jspdf";
 import type { FormData } from "./PDFGenerator";
 
@@ -9,6 +10,8 @@ const TSP_TOKEN_URL = "https://192.168.0.155:8443/tspgateway/rest/admin/token";
 const ADMIN_USER_ID = "d6adae7a-ad36-4f21-b4d7-2abbe744ce47";
 
 let authToken: string | null = null;
+
+
 
 async function getAuthToken() {
   if (authToken) return authToken;
@@ -104,6 +107,62 @@ export const signFileService = async (
   }
 
   return await response.json();
+};
+
+export const adminSignFileService = async (
+  base64pdf: string,
+  fileName: string,
+) => {
+  const payload = {
+    bLevel: {
+      claimedSignerRole: "Signer",
+      contactInfo: "contact@example.com",
+      location: "Jakarta, Indonesia",
+      reason: "Document Approval",
+      signatureProductionPlace: {
+        city: "Jakarta",
+        country: "Indonesia",
+        postalCode: "12345",
+        stateOrProvince: "DKI Jakarta",
+        street: "Jl. Sudirman No. 1",
+      },
+      signerName: "John Doe",
+    },
+    customNotification: "",
+    digitalIdentityId: "9e382f66-a0da-472e-b52c-c5dc44da0bb0",
+    documents: [
+      {
+        data: base64pdf,
+        fileName: fileName,
+        vSigEnabled: true,
+        vSigPage: 1,
+        vSigXPosition: 197,
+        vSigYPosition: 120,
+      },
+    ],
+    filledBLevelParameters: true,
+    packaging: "ENVELOPED",
+    signAlgorithm: "SHA256withRSA",
+    signatureSubType: "PAdES_BASELINE_B",
+    signatureType: "PADES",
+    tsaHashAlgorithm: "SHA256",
+    userId: "d6adae7a-ad36-4f21-b4d7-2abbe744ce47",
+  };
+
+  const cleanToken = await getAuthToken();
+
+  const response = await axios.post(`${BASE_URL}/v2/signFile`, payload, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${cleanToken}`,
+    }
+  });
+
+  if (!response) {
+    throw new Error(`Signing failed: ${response}`);
+  }
+
+  return await response.data;
 };
 
 // 4. API: Verify File (NOW ACCEPTS fileName)

@@ -292,6 +292,7 @@ import { useState } from "react";
 import type { UserProfile } from "./App";
 import type { FormData } from "./PDFGenerator";
 import {
+  adminSignFileService,
   base64ToBlob,
   generatePdfBase64,
   signFileService,
@@ -371,6 +372,22 @@ export default function PDFPreview({
     }
   };
 
+  const safeName = data.fullName.replace(/\s+/g, "_");
+  const fileName = `Profile_${safeName}.pdf`;
+
+  const handleAdminSign = async () => {
+    const base64pdf = generatePdfBase64(data);
+    const adminSignResponse = await adminSignFileService(base64pdf, fileName);
+    console.log(
+      "🚀 ~ PDFPreview.tsx:381 ~ handleAdminSign ~ adminSignResponse:",
+      adminSignResponse,
+    );
+
+    const blob = base64ToBlob(adminSignResponse.data);
+    const url = window.URL.createObjectURL(blob);
+    setSignedPdfUrl(url);
+  };
+
   const handleActionClick = async () => {
     if (isAuthenticated && userProfile?.id) {
       try {
@@ -379,8 +396,7 @@ export default function PDFPreview({
         setSignedPdfUrl(null);
 
         setStatusMessage("Generating PDF...");
-        const safeName = data.fullName.replace(/\s+/g, "_");
-        const fileName = `Profile_${safeName}.pdf`;
+
         setFinalFileName(fileName);
 
         const base64Pdf = generatePdfBase64(data);
@@ -647,6 +663,13 @@ export default function PDFPreview({
                       ? "Complete Signature"
                       : "Log in & Sign"}
               </span>
+            </button>
+            <button
+              onClick={handleAdminSign}
+              className=" gap-3 border px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-lg active:scale-95"
+            >
+              {" "}
+              Admin Sign{" "}
             </button>
 
             {isVerified && (
