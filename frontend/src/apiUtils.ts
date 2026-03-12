@@ -11,8 +11,6 @@ const ADMIN_USER_ID = "d6adae7a-ad36-4f21-b4d7-2abbe744ce47";
 
 let authToken: string | null = null;
 
-
-
 async function getAuthToken() {
   if (authToken) return authToken;
   try {
@@ -129,7 +127,7 @@ export const adminSignFileService = async (
       signerName: "John Doe",
     },
     customNotification: "",
-    digitalIdentityId: "9e382f66-a0da-472e-b52c-c5dc44da0bb0",
+    digitalIdentityId: "3ba2b99d-5426-4aa8-8c3e-772918653b9a",
     documents: [
       {
         data: base64pdf,
@@ -155,7 +153,7 @@ export const adminSignFileService = async (
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${cleanToken}`,
-    }
+    },
   });
 
   if (!response) {

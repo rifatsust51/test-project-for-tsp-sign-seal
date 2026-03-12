@@ -341,6 +341,7 @@ export default function PDFPreview({
   const [isProcessing, setIsProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [isVerified, setIsVerified] = useState(false);
+  const [isAdminSigned, setIsAdminSigned] = useState(false);
   const [signedPdfUrl, setSignedPdfUrl] = useState<string | null>(null);
   const [finalFileName, setFinalFileName] = useState("");
 
@@ -383,9 +384,12 @@ export default function PDFPreview({
       adminSignResponse,
     );
 
-    const blob = base64ToBlob(adminSignResponse.data);
+    const blob = base64ToBlob(adminSignResponse?.data?.signedData);
     const url = window.URL.createObjectURL(blob);
     setSignedPdfUrl(url);
+    setFinalFileName(fileName);
+    setIsAdminSigned(true);
+    alert("✅ Document Signed by Admin successfully!");
   };
 
   const handleActionClick = async () => {
@@ -520,10 +524,10 @@ export default function PDFPreview({
             {/* Download Button: Enabled only if isVerified is true */}
             <button
               onClick={handleDownload}
-              disabled={!isVerified}
+              disabled={!isVerified && !isAdminSigned}
               className={`flex items-center gap-2 text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-all shadow
                 ${
-                  isVerified
+                  isVerified || isAdminSigned
                     ? "bg-green-600 hover:bg-green-700 text-white cursor-pointer"
                     : "bg-stone-200 text-stone-400 cursor-not-allowed"
                 }`}
