@@ -77,7 +77,7 @@ export const signFileService = async (
   const payload = {
     data: base64Pdf,
     attached: true,
-    fileNames: [fileName], // <--- Dynamic Filename
+    fileNames: [fileName],
     signatureType: "PADES",
     signatureSubType: "PAdES_BASELINE_B",
     packaging: "ENVELOPED",

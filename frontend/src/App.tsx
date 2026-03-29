@@ -40,7 +40,6 @@ function AppContent() {
     const initAuth = async () => {
       if (!window.AAS) return;
 
-      // ─── THE FIX IS HERE ───
       // Check if the URL contains Keycloak callback parameters.
       // If NOT, we assume it's a fresh start and do NOT initialize auth.
       // This keeps the user in "Guest Mode" until they explicitly click Sign.
@@ -60,7 +59,7 @@ function AppContent() {
         const aas = window.AAS("aas.json");
         aasRef.current = aas;
 
-        // We only run this if we detected the code/state in the URL
+        // here we only run this if we detected the code/state in the URL
         const loggedIn = await aas.init({
           onLoad: "check-sso",
           checkLoginIframe: false,
