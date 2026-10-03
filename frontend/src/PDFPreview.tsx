@@ -87,19 +87,45 @@ export default function PDFPreview({
   const fileName = `Profile_${safeName}.pdf`;
 
   const handleAdminSign = async () => {
-    const base64pdf = generatePdfBase64(data);
-    const adminSignResponse = await adminSignFileService(base64pdf, fileName);
-    console.log(
-      "🚀 ~ PDFPreview.tsx:381 ~ handleAdminSign ~ adminSignResponse:",
-      adminSignResponse,
-    );
+    setIsProcessing(true);
+    setStatusMessage("Signing as Admin...");
+    try {
+      const base64pdf = generatePdfBase64(data);
+      const adminSignResponse = await adminSignFileService(base64pdf, fileName);
+      console.log(
+        "🚀 ~ handleAdminSign ~ adminSignResponse:",
+        adminSignResponse,
+      );
+      const signedDataResponse =
+        adminSignResponse?.data?.signedData || adminSignResponse?.signedData;
+      const signedData = Array.isArray(signedDataResponse)
+        ? signedDataResponse[0]
+        : signedDataResponse;
+      const serviceMessage =
+        adminSignResponse?.message || adminSignResponse?.data?.message;
 
-    const blob = base64ToBlob(adminSignResponse?.data?.signedData);
-    const url = window.URL.createObjectURL(blob);
-    setSignedPdfUrl(url);
-    setFinalFileName(fileName);
-    setIsAdminSigned(true);
-    alert("✅ Document Signed by Admin successfully!");
+      if (typeof signedData !== "string" || !signedData) {
+        throw new Error(
+          typeof serviceMessage === "string"
+            ? serviceMessage
+            : "Admin signing response did not include signedData",
+        );
+      }
+
+      const blob = base64ToBlob(signedData);
+      const url = window.URL.createObjectURL(blob);
+      setSignedPdfUrl(url);
+      setFinalFileName(fileName);
+      setIsAdminSigned(true);
+      alert("✅ Document Signed by Admin successfully!");
+    } catch (error) {
+      console.error("Admin signing failed:", error);
+      alert(
+        `Admin signing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleActionClick = async () => {
@@ -188,9 +214,10 @@ export default function PDFPreview({
               <p className="font-bold text-stone-800 text-sm truncate">
                 {userProfile.name}
               </p>
-              <p className="text-xs text-stone-500 truncate mb-4">
+              <p className="text-xs text-stone-500 break-all mb-4">
                 {userProfile.email}
               </p>
+
               <button
                 onClick={onLogout}
                 className="w-full text-xs font-semibold text-red-500 hover:text-red-700 hover:bg-red-50 py-2 rounded transition-colors border border-red-100"
@@ -380,10 +407,15 @@ export default function PDFPreview({
             </button>
             <button
               onClick={handleAdminSign}
-              className=" gap-3 border px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-lg active:scale-95"
+              disabled={isProcessing || isAdminSigned}
+              className="flex items-center gap-3 border border-green-600 px-8 py-4 rounded-xl text-green-700 text-md transition-all duration-300 hover:shadow-lg active:scale-95  disabled:opacity-60"
             >
-              {" "}
-              Admin Sign{" "}
+              {isProcessing && <span aria-hidden="true">↻</span>}
+              {isProcessing
+                ? "Signing..."
+                : isAdminSigned
+                  ? "DOCUMENT SIGNED BY ADMIN"
+                  : "Admin Sign"}
             </button>
 
             {isVerified && (

@@ -65,19 +65,52 @@ function AppContent() {
           checkLoginIframe: false,
         });
 
+        // if (loggedIn) {
+        //   console.log("✅ Login flow completed!");
+        //   setIsAuthenticated(true);
+        //   setToken(aas.getToken());
+
+        //   const parsed = aas.getTokenParsed();
+        //   console.log("🚀 ~ initAuth ~ parsedToken:", parsed);
+        //   const parsedCopy = JSON.parse(JSON.stringify(parsed)); // Deep copy
+        //   console.log("Copied email:", parsedCopy.email);
+        //   console.log("Email:", parsed["email"]); // Try bracket notation
+        //   console.log("Name:", parsed["name"]);
+
+        //   setUserProfile({
+        //     name: aas.getFullName() || parsed.preferred_username,
+        //     email: parsedCopy.email || "No Email",
+        //     id: aas.getUserId(),
+        //   });
+
+        //   // Clean the ugly URL parameters
+        //   window.history.replaceState(
+        //     {},
+        //     document.title,
+        //     window.location.pathname,
+        //   );
+        // }
+
         if (loggedIn) {
           console.log("✅ Login flow completed!");
           setIsAuthenticated(true);
           setToken(aas.getToken());
 
-          const parsed = aas.getTokenParsed();
-          setUserProfile({
-            name: aas.getFullName() || parsed.preferred_username,
-            email: parsed.email || "No Email",
-            id: aas.getUserId(),
-          });
+          // Try getting email from the raw token
+          const tokenString = aas.getToken();
+          const tokenParts = tokenString.split(".");
+          if (tokenParts.length === 3) {
+            const payload = JSON.parse(atob(tokenParts[1]));
+            console.log("Email from decoded token:", payload.email);
+            console.log("Name from decoded token:", payload.name);
 
-          // Clean the ugly URL parameters
+            setUserProfile({
+              name: payload.name || payload.preferred_username,
+              email: payload.email || "No Email",
+              id: aas.getUserId(),
+            });
+          }
+
           window.history.replaceState(
             {},
             document.title,
@@ -123,6 +156,8 @@ function AppContent() {
       });
     }
   };
+
+  console.log("user profile is :", userProfile);
 
   console.log("token is :", token);
 

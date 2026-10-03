@@ -3,11 +3,11 @@ import axios from "axios";
 import { jsPDF } from "jspdf";
 import type { FormData } from "./PDFGenerator";
 
-const BASE_URL = "https://192.168.0.155:8443/tspgatewayservice/gateway";
+const BASE_URL = "https://192.168.0.10:8443/tspgatewayservice/gateway";
 
-const TSP_TOKEN_URL = "https://192.168.0.155:8443/tspgateway/rest/admin/token";
+const TSP_TOKEN_URL = "https://192.168.0.10:8443/tspgateway/rest/admin/token";
 
-const ADMIN_USER_ID = "d6adae7a-ad36-4f21-b4d7-2abbe744ce47";
+const ADMIN_USER_ID = "66400c48-acb6-4309-ba52-24d54ad52af5";
 
 let authToken: string | null = null;
 
@@ -83,10 +83,12 @@ export const signFileService = async (
     packaging: "ENVELOPED",
     signAlgorithm: "SHA256withRSA",
     hashAlgorithm: "SHA256",
+    customNotification:
+      "This sign will be used for document approval in a test project ",
     userId: userId,
     vSigEnabled: true,
     vSigPage: 1,
-    vSigXPosition: 320,
+    vSigXPosition: 430,
     vSigYPosition: 750,
   };
 
@@ -127,7 +129,7 @@ export const adminSignFileService = async (
       signerName: "John Doe",
     },
     customNotification: "",
-    digitalIdentityId: "3ba2b99d-5426-4aa8-8c3e-772918653b9a",
+    digitalIdentityId: "4d88ef87-b091-4370-807c-49625999242a",
     documents: [
       {
         data: base64pdf,
@@ -144,10 +146,11 @@ export const adminSignFileService = async (
     signatureSubType: "PAdES_BASELINE_B",
     signatureType: "PADES",
     tsaHashAlgorithm: "SHA256",
-    userId: "d6adae7a-ad36-4f21-b4d7-2abbe744ce47",
+    userId: "66400c48-acb6-4309-ba52-24d54ad52af5",
   };
 
   const cleanToken = await getAuthToken();
+  console.log("🚀 ~ adminSignFileService ~ cleanToken:", cleanToken);
 
   const response = await axios.post(`${BASE_URL}/v2/signFile`, payload, {
     headers: {
