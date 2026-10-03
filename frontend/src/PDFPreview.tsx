@@ -49,6 +49,7 @@ export default function PDFPreview({
 
   // State for process tracking
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAdminProcessing, setIsAdminProcessing] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [isVerified, setIsVerified] = useState(false);
   const [isAdminSigned, setIsAdminSigned] = useState(false);
@@ -87,8 +88,7 @@ export default function PDFPreview({
   const fileName = `Profile_${safeName}.pdf`;
 
   const handleAdminSign = async () => {
-    setIsProcessing(true);
-    setStatusMessage("Signing as Admin...");
+    setIsAdminProcessing(true);
     try {
       const base64pdf = generatePdfBase64(data);
       const adminSignResponse = await adminSignFileService(base64pdf, fileName);
@@ -124,7 +124,7 @@ export default function PDFPreview({
         `Admin signing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     } finally {
-      setIsProcessing(false);
+      setIsAdminProcessing(false);
     }
   };
 
@@ -380,7 +380,7 @@ export default function PDFPreview({
 
             <button
               onClick={handleActionClick}
-              disabled={isProcessing || isVerified}
+              disabled={isProcessing || isAdminProcessing || isVerified}
               className={`group relative flex items-center gap-3 border px-8 py-4 rounded-xl transition-all duration-300 hover:shadow-lg active:scale-95
                 ${isProcessing ? "bg-stone-100 cursor-wait text-stone-400" : isVerified ? "bg-stone-50 border-green-500 text-green-600 cursor-default" : isAuthenticated ? "bg-green-600 border-green-600 hover:bg-green-700 text-white" : "bg-white border-stone-200 hover:border-amber-400 text-stone-700"}`}
             >
@@ -407,11 +407,11 @@ export default function PDFPreview({
             </button>
             <button
               onClick={handleAdminSign}
-              disabled={isProcessing || isAdminSigned}
+              disabled={isProcessing || isAdminProcessing || isAdminSigned}
               className="flex items-center gap-3 border border-green-600 px-8 py-4 rounded-xl text-green-700 text-md transition-all duration-300 hover:shadow-lg active:scale-95  disabled:opacity-60"
             >
-              {isProcessing && <span aria-hidden="true">↻</span>}
-              {isProcessing
+              {isAdminProcessing && <span aria-hidden="true">↻</span>}
+              {isAdminProcessing
                 ? "Signing..."
                 : isAdminSigned
                   ? "DOCUMENT SIGNED BY ADMIN"
